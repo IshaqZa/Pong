@@ -29,6 +29,7 @@ private:
     GLfloat length;
     vec3 color;
     vec2 transPos = center;
+    int score = 0;
     int pos;
 
 public:
@@ -87,6 +88,15 @@ public:
             transV = vec3(0.0f, 0.0f, 0.0f);
     }
 
+    void Scored() { score++; }
+
+    void reset(mat4& trans) {
+
+        trans = mat4(1.0f);
+        transPos = center;
+
+    }
+
     
 };
 
@@ -97,6 +107,7 @@ private:
     GLuint segments;
     vec3 color;
     vec2 transPos = center;
+    int noCol = 0;
     int pos;
 
 public:
@@ -129,7 +140,7 @@ public:
 
     }
 
-    void checkCollision(Polygon player, Polygon enemy) {
+    void checkCollision(Polygon player, Polygon enemy, mat4& playerTrans, mat4& enemyTrans, mat4& ballTrans) {
 
         //check collision with player
         if (this->transPos.y >= player.getTransPos().y && this->transPos.y <= (player.getTransPos().y + player.getLength())) {  // is this ball in the height range of the player?
@@ -142,6 +153,7 @@ public:
                 std::cout << "Radius: " << radius << std::endl;*/
 
                 transVball.x = -transVball.x + 0.005;
+                noCol++;
             }
         }
 
@@ -157,12 +169,40 @@ public:
                 std::cout << "Radius: " << radius << std::endl;*/
 
                 transVball.x = -transVball.x - 0.005;
+                noCol++;
             }
         }
 
-        //check collision with top and bottom borders
+        // check collision with top and bottom borders
         if (this->transPos.y + this->radius >= 1.0f || this->transPos.y - radius <= -1.0f) transVball.y = -transVball.y;
-        if (this->transPos.x + this->radius >= 1.0f || this->transPos.x - radius <= -1.0f) transVball.x = -transVball.x; 
+
+        // check for collisions to the left and right(win condition)
+        if (this->transPos.x + this->radius >= 1.0f) {
+
+            EndTurn(player, player, enemy, playerTrans, enemyTrans, ballTrans);
+
+        }
+        else if (this->transPos.x - radius <= -1.0f) {
+
+            EndTurn(enemy, player, enemy, playerTrans, enemyTrans, ballTrans);
+
+        }
+    }
+
+    void reset(mat4& trans) {
+
+        trans = mat4(1.0);
+        transPos = center;
+
+    }
+
+    void EndTurn(Polygon winner, Polygon player, Polygon enemy, mat4& playerTrans, mat4& enemyTrans, mat4& ballTrans) {
+        
+        winner.Scored();
+        player.reset(playerTrans);
+        enemy.reset(enemyTrans);
+        this->reset(ballTrans);
+
     }
 };
 
@@ -196,12 +236,6 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
         }
     }
 }
-
-//void gameEnd() {
-//
-//
-//
-//}
 
 int main() {
     glfwInit();
@@ -284,15 +318,11 @@ int main() {
     mat4 transEnemy = mat4(1.0f);
     GLuint uniform = glGetUniformLocation(shaderProgram.ID, "transform");
 
-    
-
-
-
-
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         shaderProgram.Activate();
+        glBindVertexArray(VAO);
 
         player.updateTransPos(transVplayer);
         player.checkCollision(transVplayer);
@@ -302,7 +332,7 @@ int main() {
 
         transBall = translate(transBall, transVball);
         ball.updateTransPos(transVball);
-        ball.checkCollision(player, enemy);
+        ball.checkCollision(player, enemy, transPlayer, transEnemy, transBall);
         glUniformMatrix4fv(uniform, 1, GL_FALSE, value_ptr(transBall));
         ball.render(GL_TRIANGLE_FAN);
 
@@ -316,8 +346,6 @@ int main() {
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
-
-    
 
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
