@@ -19,12 +19,6 @@
     <Filter Include="Resource Files\Shader">
       <UniqueIdentifier>{135d789e-33e4-435c-a78a-2b929952b4dc}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resource Files\Image">
-      <UniqueIdentifier>{7a101133-e3fc-41c6-8671-131449627348}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\texture">
-      <UniqueIdentifier>{61a473fa-ac7f-4f76-b87f-c72095d31089}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="glad.c">
@@ -36,16 +30,10 @@
     <ClCompile Include="shaderClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stb_image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderClass.h">
       <Filter>Header Files\shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\..\Downloads\stb_image.h">
-      <Filter>Header Files\texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -55,10 +43,5 @@
     <None Include="default.frag">
       <Filter>Resource Files\Shader</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\..\..\Space.jpeg">
-      <Filter>Resource Files\Image</Filter>
-    </Image>
   </ItemGroup>
 </Project>

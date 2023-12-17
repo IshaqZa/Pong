@@ -14,7 +14,6 @@
 
 #include "ShaderClass.h"
 
-#include "stb/stb_image.h"
 using namespace glm;
 
 // make translation vectors(global)
@@ -74,7 +73,6 @@ public:
 
     void render() {
         glDrawArrays(GL_TRIANGLES, pos, 3);
-
         glDrawArrays(GL_TRIANGLES, pos + 1, 3);
     }
 
@@ -199,11 +197,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     }
 }
 
-void gameEnd() {
-
-
-
-}
+//void gameEnd() {
+//
+//
+//
+//}
 
 int main() {
     glfwInit();
@@ -221,6 +219,16 @@ int main() {
     glViewport(0, 0, 650, 650);
 
     Shader shaderProgram("default.vert", "default.frag");
+    GLint success;
+    GLchar infoLog[50];
+    glGetProgramiv(shaderProgram.ID, GL_LINK_STATUS, &success);
+    if (!success) {
+
+        glGetProgramInfoLog(shaderProgram.ID, 512, NULL, infoLog);
+        std::cout << "Shader program linking failed:\n" << infoLog << std::endl;
+
+    }
+
 
     std::vector<GLfloat> vertices;
 
@@ -233,36 +241,6 @@ int main() {
     Circle ball(vec2(0.0f, 0.0f), 0.05f, 500, vec3(1.0f, 1.0f, 1.0f));
     ball.create(vertices);
     ball.launch();
-
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    int width, height, nrChannels;
-    unsigned char* data = stbi_load("Space.jpeg", &width, &height, &nrChannels, 0);
-    
-    if (data) {
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-        glGenerateMipmap(GL_TEXTURE_2D);
-
-    }
-    else {
-
-        std::cout << "Failed to load texture" << std::endl;
-
-    }
-
-    stbi_image_free(data);
-    
-    
-
-
-
 
     // debugging purposes
     /*for (int i = 0; i < vertices.size(); i++) {
@@ -279,7 +257,7 @@ int main() {
     vec = trans * vec;
     std::cout << vec.x << vec.y << vec.z << std::endl;*/
 
-    GLuint VAO, VBO, EBO;
+    GLuint VAO, VBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glBindVertexArray(VAO);
@@ -293,6 +271,10 @@ int main() {
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+    GLenum error = glGetError();
+    if(error!= GL_NO_ERROR) std::cout << error << std::endl;
+
+
     // give a pointer to the key_callback function to implement keyboard input functionality
     glfwSetKeyCallback(window, key_callback);
 
@@ -302,23 +284,21 @@ int main() {
     mat4 transEnemy = mat4(1.0f);
     GLuint uniform = glGetUniformLocation(shaderProgram.ID, "transform");
 
+    
+
+
+
+
     while (!glfwWindowShouldClose(window)) {
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         shaderProgram.Activate();
 
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glBindVertexArray(VAO);
-
         player.updateTransPos(transVplayer);
         player.checkCollision(transVplayer);
         transPlayer = translate(transPlayer, transVplayer);
-
         glUniformMatrix4fv(uniform, 1, GL_FALSE, value_ptr(transPlayer));
-
         player.render();
-
-        
 
         transBall = translate(transBall, transVball);
         ball.updateTransPos(transVball);
@@ -337,8 +317,9 @@ int main() {
         glfwPollEvents();
     }
 
+    
+
     glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &EBO);
     glDeleteBuffers(1, &VBO);
     shaderProgram.Delete();
     glfwDestroyWindow(window);

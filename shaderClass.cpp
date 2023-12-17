@@ -1,5 +1,5 @@
 #include "ShaderClass.h"
-
+#include <iostream>
 std::string get_file_contents(std::string inputFile) {
 
 	std::ifstream in(inputFile, std::ios::binary);
@@ -38,7 +38,22 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile) {
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 
+	GLint success;
+	GLchar infoLog[512];
 
+	// Check vertex shader
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+		std::cout << "Vertex shader compilation failed:\n" << infoLog << std::endl;
+	}
+
+	// Check fragment shader
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+	if (!success) {
+		glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+		std::cout << "Fragment shader compilation failed:\n" << infoLog << std::endl;
+	}
 
 }
 
